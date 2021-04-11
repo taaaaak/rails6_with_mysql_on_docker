@@ -1,0 +1,25 @@
+version: "3.7"
+services:
+  db:
+    build: mysql
+    image: noknow_db
+    container_name: noknow_db
+    ports:
+      - 3306:3306
+    # エラー対応
+    # Mysql2::Error::ConnectionError: Plugin caching_sha2_password could not be loaded:
+    # /usr/lib/x86_64-linux-gnu/mariadb19/plugin/caching_sha2_password.so: cannot open shared object file: No such file or directory
+    # https://qiita.com/yensaki/items/9e453b7320ca2d0461c7
+    volumes:
+      - ./mysql:/etc/mysql/conf.d
+  app:
+    build: rails
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    image: noknow_app
+    container_name: noknow_app
+    ports:
+      - 3000:3000
+    volumes:
+      - ./rails:/noknowApp
+    depends_on:
+      - db
